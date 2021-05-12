@@ -3,13 +3,13 @@ from datetime import datetime
 import pyrebase
 import pytz
 import requests
-# from celery import shared_task
+from celery import shared_task
 from django.conf import settings
 # from fake_useragent import UserAgent
 from pyfcm import FCMNotification
 
 
-# @shared_task(name="tracker")
+@shared_task(name="tracker")
 def my_cowin_runner():
     def call(pin_code, date, execute_18_plus, initial_18_plus_slot_date, execute_45_plus, initial_45_plus_slot_date):
 

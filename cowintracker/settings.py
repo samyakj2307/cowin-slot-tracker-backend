@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8jsqz@@qw6aj03n@-!!1m-x_(*fpax!4o3ep*v&d%3e0!^tb)e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['cowin-tracker-7p2wm.ondigitalocean.app']
+ALLOWED_HOSTS = ['cowin-tracker-7p2wm.ondigitalocean.app','127.0.0.1']
 
 
 # Application definition
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tracker',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +127,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_BROKER_URL = "amqps://abncvxha:6UWXiPEQ9_EjBcTdcM7J8skckajT0Ba4@baboon.rmq.cloudamqp.com/abncvxha"
+
+
+CELERY_BEAT_SCHEDULE = {
+    "Cowin Tracker Task": {
+        "task" : "tracker",
+        "schedule": 900.0,
+    
+    }
+}
