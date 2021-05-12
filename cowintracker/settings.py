@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8jsqz@@qw6aj03n@-!!1m-x_(*fpax!4o3ep*v&d%3e0!^tb)e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['cowin-tracker-7p2wm.ondigitalocean.app']
 
 
 # Application definition
