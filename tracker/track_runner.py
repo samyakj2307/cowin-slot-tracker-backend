@@ -35,9 +35,10 @@ def my_cowin_runner():
         json_response = response.json()
         all_centers = json_response["centers"]
 
+        all_18_plus_sessions = []
+        all_45_plus_sessions = []
+
         if len(all_centers) != 0:
-            all_18_plus_sessions = []
-            all_45_plus_sessions = []
             for center in all_centers:
                 all_sessions = center["sessions"]
                 for session in all_sessions:
@@ -46,28 +47,31 @@ def my_cowin_runner():
                     elif session['min_age_limit']==45:
                         all_45_plus_sessions.append(session)
 
-            def check_available_slots(temp_sessions):
-                if len(temp_sessions) != 0:
-                    for session in temp_sessions:
-                        if int(session["available_capacity"]) > 0 and not (len(session["slots"]) == 0):
-                            return session['date'], True
+            
+        def check_available_slots(temp_sessions):
+            if len(temp_sessions) != 0:
+                for session in temp_sessions:
+                    if int(session["available_capacity"]) > 0 and not (len(session["slots"]) == 0):
+                        return (session['date'], True)
 
-            if execute_18_plus:
-                my_values = check_available_slots(all_18_plus_sessions)
-                if my_values is not None:
-                    available_slot_date_in_18_plus, is_slot_available_in_18_plus = my_values
-            if execute_45_plus:
-                my_values = check_available_slots(all_45_plus_sessions)
-                if my_values is not None:
-                    available_slot_date_in_45_plus, is_slot_available_in_45_plus = my_values
 
-            if not execute_18_plus:
-                is_slot_available_in_18_plus = True
-                available_slot_date_in_18_plus = initial_18_plus_slot_date
 
-            if not execute_45_plus:
-                is_slot_available_in_45_plus = True
-                available_slot_date_in_45_plus = initial_45_plus_slot_date
+        if execute_18_plus:
+            my_values = check_available_slots(all_18_plus_sessions)
+            if my_values is not None:
+                available_slot_date_in_18_plus, is_slot_available_in_18_plus = my_values
+        elif not execute_18_plus:
+            is_slot_available_in_18_plus = True
+            available_slot_date_in_18_plus = initial_18_plus_slot_date
+
+        if execute_45_plus:
+            my_values = check_available_slots(all_45_plus_sessions)
+            if my_values is not None:
+                available_slot_date_in_45_plus, is_slot_available_in_45_plus = my_values
+        elif not execute_45_plus:
+            is_slot_available_in_45_plus = True
+            available_slot_date_in_45_plus = initial_45_plus_slot_date
+                
 
         return is_slot_available_in_18_plus, available_slot_date_in_18_plus, is_slot_available_in_45_plus, available_slot_date_in_45_plus
 
@@ -94,11 +98,18 @@ def my_cowin_runner():
 
         all_pincodes = list(db.child("Track Pin Codes").get().val().keys())
 
-        current_api_call_counter = db.child("api_call_counter_details").child("api_call_counter").get().val()
+        database_api_call_counter = db.child("api_call_counter_details").child("api_call_counter").get().val()
+        current_api_call_counter = 0
+        init_timestamp = time.time()
         last_used_timestamp = db.child("api_call_counter_details").child("timestamp").get().val()
 
-        if((time.time() - last_used_timestamp) > 310):
-            current_api_call_counter = 0
+        if (init_timestamp - last_used_timestamp) < 310 and database_api_call_counter>90:
+            sleeping_time = 310 -(init_timestamp - last_used_timestamp)
+            print("Sleeping for" + sleeping_time + "seconds in outer loop")
+            time.sleep(sleeping_time)
+            database_api_call_counter = 0
+        elif (init_timestamp - last_used_timestamp) > 310 :
+            database_api_call_counter = 0
 
         now = datetime.now()
         tz = pytz.timezone('Asia/Kolkata')
@@ -116,15 +127,18 @@ def my_cowin_runner():
 
 
         for pincode in all_pincodes:
-            print(current_api_call_counter)
-            if current_api_call_counter>90:
+            if current_api_call_counter+database_api_call_counter>95:
+                print("Sleeping for five minutes in inner loop")
                 time.sleep(300)
                 current_api_call_counter = 0
-
+            
+            print("First Call")
             is_18_plus_available, slot_date_for_18_plus, is_45_plus_available, slot_date_for_45_plus = call(pincode,
                                                                                                             date_today,
-                                                                                                            True, "",
-                                                                                                            True, "")
+                                                                                                            True,
+                                                                                                            "",
+                                                                                                            True,
+                                                                                                            "")
             current_api_call_counter+=1
             should_execute_next_18 = not is_18_plus_available
             should_execute_next_45 = not is_45_plus_available
@@ -132,6 +146,7 @@ def my_cowin_runner():
             if is_18_plus_available and is_45_plus_available:
                 pass
             else:
+                print("Second Call")
                 is_18_plus_available, slot_date_for_18_plus, is_45_plus_available, slot_date_for_45_plus = call(pincode,
                                                                                                                 date_after_one_week,
                                                                                                                 should_execute_next_18,
@@ -141,6 +156,7 @@ def my_cowin_runner():
                 current_api_call_counter+=1
 
             all_slot_tracker_modes = list(db.child("Track Pin Codes").child(pincode).child("users").get().val().keys())
+
 
             all_18_plus_subscribers = []
             all_45_plus_subscribers = []
@@ -159,8 +175,12 @@ def my_cowin_runner():
                 if slot == 'is_all':
                     all_slot_subscribers = list(
                         db.child("Track Pin Codes").child(pincode).child("users").child('is_all').get().val().values())
-                        
+
+
+            print(str(is_18_plus_available)+","+str(is_45_plus_available))       
             if is_18_plus_available:
+                print("18+ Available for")
+                print(pincode)
 
                 data_message = {
                     "slot_type" : "18+",
@@ -176,6 +196,8 @@ def my_cowin_runner():
                                                     message_body=message_body, low_priority=False, data_message = data_message)
 
             if is_45_plus_available:
+                print("45+ Available for")
+                print(pincode)
                 data_message = {
                     "slot_type" : "45+",
                     "date" : slot_date_for_45_plus,
@@ -185,12 +207,16 @@ def my_cowin_runner():
                 message_title = "Hurry, 45+ Age Slots available"
                 message_body = "Cowin Slots Available for Pincode " + pincode + " on " + slot_date_for_45_plus
                 subscriber_list = all_45_plus_subscribers + all_slot_subscribers
+                print(subscriber_list)
                 valid_subscriber_list = push_service.clean_registration_ids(subscriber_list)
-                push_service.notify_multiple_devices(valid_subscriber_list, message_title=message_title,
+                print(valid_subscriber_list)
+                push_service.notify_multiple_devices(subscriber_list, message_title=message_title,
                                                     message_body=message_body, low_priority=False, data_message = data_message)
+
+            print("Next Pincode\n")
         
         db.child("api_call_counter_details").child("api_call_counter").set(current_api_call_counter)
-        db.child("api_call_counter_details").child("timestamp").set(time.time())
+        db.child("api_call_counter_details").child("timestamp").set(init_timestamp)
     
     else:
         print("No Pincodes to Track")
