@@ -191,8 +191,10 @@ def my_cowin_runner():
                 message_title = "Hurry, 18+ Age Slots available"
                 message_body = "Cowin Slots Available for Pincode " + pincode + " on " + slot_date_for_18_plus
                 subscriber_list = all_18_plus_subscribers + all_slot_subscribers
-                valid_subscriber_list = push_service.clean_registration_ids(subscriber_list)
-                push_service.notify_multiple_devices(valid_subscriber_list, message_title=message_title,
+
+                # valid_subscriber_list = push_service.clean_registration_ids(subscriber_list)
+
+                push_service.notify_multiple_devices(subscriber_list, message_title=message_title,
                                                     message_body=message_body, low_priority=False, data_message = data_message)
 
             if is_45_plus_available:
@@ -207,9 +209,9 @@ def my_cowin_runner():
                 message_title = "Hurry, 45+ Age Slots available"
                 message_body = "Cowin Slots Available for Pincode " + pincode + " on " + slot_date_for_45_plus
                 subscriber_list = all_45_plus_subscribers + all_slot_subscribers
-                print(subscriber_list)
-                valid_subscriber_list = push_service.clean_registration_ids(subscriber_list)
-                print(valid_subscriber_list)
+                # print(subscriber_list)
+                # valid_subscriber_list = push_service.clean_registration_ids(subscriber_list)
+                # print(valid_subscriber_list)
                 push_service.notify_multiple_devices(subscriber_list, message_title=message_title,
                                                     message_body=message_body, low_priority=False, data_message = data_message)
 
