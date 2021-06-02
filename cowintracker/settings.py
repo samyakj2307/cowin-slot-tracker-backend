@@ -137,7 +137,7 @@ CELERY_TIMEZONE = pytz.timezone('Asia/Kolkata').zone
 CELERY_BEAT_SCHEDULE = {
     "Cowin Tracker Task": {
         "task" : "tracker",
-        "schedule": 300.0,
+        "schedule": 390.0,
     
     }
 }

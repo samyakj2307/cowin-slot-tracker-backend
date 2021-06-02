@@ -125,8 +125,9 @@ def my_cowin_runner():
         api_key = 'AAAAte0Poi0:APA91bGhEspD5CHP6kgMdcedNVi6ZOHuD-HRKJ5tU-5hkcTubozuFoHGZiQ6vWY6IBfm1jCL0gRVQiym5iCNvBNkaCyrV4IU4DS_6sM9lRxIcfqt--PP_ooaGAJ7ev8-k5gZiLya6rla'
         push_service = FCMNotification(api_key=api_key)
 
-
+        print(all_pincodes)
         for pincode in all_pincodes:
+            print(pincode)
             if current_api_call_counter+database_api_call_counter>95:
                 print("Sleeping for five minutes in inner loop")
                 time.sleep(300)
@@ -176,11 +177,8 @@ def my_cowin_runner():
                     all_slot_subscribers = list(
                         db.child("Track Pin Codes").child(pincode).child("users").child('is_all').get().val().values())
 
-
-            print(str(is_18_plus_available)+","+str(is_45_plus_available))       
+      
             if is_18_plus_available:
-                print("18+ Available for")
-                print(pincode)
 
                 data_message = {
                     "slot_type" : "18+",
@@ -198,8 +196,6 @@ def my_cowin_runner():
                                                     message_body=message_body, low_priority=False, data_message = data_message)
 
             if is_45_plus_available:
-                print("45+ Available for")
-                print(pincode)
                 data_message = {
                     "slot_type" : "45+",
                     "date" : slot_date_for_45_plus,
@@ -215,7 +211,7 @@ def my_cowin_runner():
                 push_service.notify_multiple_devices(subscriber_list, message_title=message_title,
                                                     message_body=message_body, low_priority=False, data_message = data_message)
 
-            print("Next Pincode\n")
+            print("Next Pincode")
         
         db.child("api_call_counter_details").child("api_call_counter").set(current_api_call_counter)
         db.child("api_call_counter_details").child("timestamp").set(init_timestamp)
