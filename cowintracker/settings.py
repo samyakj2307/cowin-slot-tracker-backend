@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-8jsqz@@qw6aj03n@-!!1m-x_(*fpax!4o3ep*v&d%3e0!^tb)e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -137,7 +137,7 @@ CELERY_TIMEZONE = pytz.timezone('Asia/Kolkata').zone
 CELERY_BEAT_SCHEDULE = {
     "Cowin Tracker Task": {
         "task" : "tracker",
-        "schedule": 390.0,
+        "schedule": 600.0,
     
     }
 }
