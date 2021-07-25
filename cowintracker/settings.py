@@ -134,10 +134,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CELERY_TIMEZONE = pytz.timezone('Asia/Kolkata').zone
 
 
+# CELERY_BEAT_SCHEDULE = {
+#     "Cowin Tracker Task": {
+#         "task" : "tracker",
+#         "schedule": 600.0,
+#
+#     }
+# }
+
 CELERY_BEAT_SCHEDULE = {
     "Cowin Tracker Task": {
-        "task" : "tracker",
+        "task": "tracker_2_0",
         "schedule": 600.0,
-    
+
     }
 }

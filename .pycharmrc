@@ -1,0 +1,2 @@
+source ~/.bashrc
+source ~/cowin_tracker_env/bin/activate
